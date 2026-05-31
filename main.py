@@ -12,8 +12,9 @@ YOUTUBE_CLIENT_SECRET_JSON = os.environ["YOUTUBE_CLIENT_SECRET_JSON"]
 YOUTUBE_TOKEN_JSON = os.environ.get("YOUTUBE_TOKEN", None)
 
 def fetch_stories():
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-    url = "https://www.reddit.com/r/NoSleep/top.json?t=week&limit=10"
+    headers = {"User-Agent": "NightmareBot/1.0 by Safe-Organization343",
+    "Accept": "application/json"}
+    url = "https://old.reddit.com/r/NoSleep/top.json?t=week&limit=10"
     response = requests.get(url, headers=headers)
     data = response.json()
     stories = []
