@@ -1,5 +1,5 @@
 import os, json, subprocess, requests, textwrap
-import google.generativeai as genai
+import google.genai as genai
 import edge_tts
 import asyncio
 from PIL import Image, ImageDraw, ImageFont
@@ -33,14 +33,16 @@ def fetch_stories():
         return []
 
 def generate_script(story_text):
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel('gemini-2.0-flash')
+    client = genai.Client(api_key=GEMINI_API_KEY)
     prompt = f"""You are a professional horror storyteller. Convert this Reddit story into an 8-10 minute video script. 
     Start with a gripping hook. Use American conversational English. Insert [PAUSE] where the narrator should pause for drama.
     At the end add: "Subscribe before you turn off the lights." 
     Below the script, list 5 visual scene descriptions (one per line) for images to show. Format: "SCENE: description".
     Story: {story_text}"""
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt
+    )
     content = response.text
     parts = content.split("SCENE:")
     script = parts[0].strip()
