@@ -12,22 +12,25 @@ YOUTUBE_CLIENT_SECRET_JSON = os.environ["YOUTUBE_CLIENT_SECRET_JSON"]
 YOUTUBE_TOKEN_JSON = os.environ.get("YOUTUBE_TOKEN", None)
 
 def fetch_stories():
-    headers = {"User-Agent": "NightmareBot/1.0 by Safe-Organization343",
-    "Accept": "application/json"}
-    url = "https://old.reddit.com/r/NoSleep/top.json?t=week&limit=10"
-    response = requests.get(url, headers=headers)
-    data = response.json()
-    stories = []
-    for post in data["data"]["children"]:
-        p = post["data"]
-        if p["ups"] >= 500 and len(p["selftext"]) > 2000:
-            stories.append({
-                "title": p["title"],
-                "text": p["selftext"],
-                "id": p["id"]
-            })
-    return stories
-
+    headers = {
+        "User-Agent": "NightmareBot/1.0 by Safe-Organization343"
+    }
+    url = "https://api.pullpush.io/reddit/search/submission/?subreddit=nosleep&sort=desc&sort_type=score&size=10"
+    try:
+        response = requests.get(url, headers=headers, timeout=30)
+        data = response.json()
+        stories = []
+        for post in data["data"]:
+            if post.get("score", 0) >= 500 and len(post.get("selftext", "")) > 2000:
+                stories.append({
+                    "title": post["title"],
+                    "text": post["selftext"],
+                    "id": post["id"]
+                })
+        return stories
+    except Exception as e:
+        print(f"Error fetching stories: {e}")
+        return []
 def rate_story(story_text):
     genai.configure(api_key=GEMINI_API_KEY)
     model = genai.GenerativeModel('gemini-1.5-flash')
