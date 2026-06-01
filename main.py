@@ -31,9 +31,10 @@ def fetch_stories():
     except Exception as e:
         print(f"Error fetching stories: {e}")
         return []
+
 def rate_story(story_text):
     genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-2.0-flash')
     prompt = "Rate the following horror story on a scale 1-10 for scariness, narrative quality, and US YouTube audience appeal. Only reply with a number."
     response = model.generate_content(prompt + "\n\n" + story_text[:3000])
     try:
@@ -43,7 +44,7 @@ def rate_story(story_text):
 
 def generate_script(story_text):
     genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-pro')
+    model = genai.GenerativeModel('gemini-2.0-flash')
     prompt = f"""You are a professional horror storyteller. Convert this Reddit story into an 8-10 minute video script. 
     Start with a gripping hook. Use American conversational English. Insert [PAUSE] where the narrator should pause for drama.
     At the end add: "Subscribe before you turn off the lights." 
