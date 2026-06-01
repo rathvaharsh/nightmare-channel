@@ -1,4 +1,4 @@
-import os, json, time, tempfile, subprocess, requests, random, textwrap
+import os, json, subprocess, requests, textwrap
 import google.generativeai as genai
 import edge_tts
 import asyncio
@@ -31,16 +31,6 @@ def fetch_stories():
     except Exception as e:
         print(f"Error fetching stories: {e}")
         return []
-
-def rate_story(story_text):
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel('gemini-2.0-flash')
-    prompt = "Rate the following horror story on a scale 1-10 for scariness, narrative quality, and US YouTube audience appeal. Only reply with a number."
-    response = model.generate_content(prompt + "\n\n" + story_text[:3000])
-    try:
-        return int(response.text.strip()[0])
-    except:
-        return 5
 
 def generate_script(story_text):
     genai.configure(api_key=GEMINI_API_KEY)
@@ -82,7 +72,7 @@ def create_thumbnail(title):
     img.save("thumbnail.jpg")
     return "thumbnail.jpg"
 
-def assemble_video(script, voice_path, thumbnail_path):
+def assemble_video(voice_path, thumbnail_path):
     if not os.path.exists("black.mp4"):
         subprocess.run("ffmpeg -f lavfi -i color=c=black:s=1280x720:d=600 -c:v libx264 black.mp4", shell=True)
     subprocess.run(f"ffmpeg -i black.mp4 -i {voice_path} -c:v copy -c:a aac -map 0:v -map 1:a -shortest final.mp4", shell=True)
@@ -116,16 +106,7 @@ async def main():
     if not stories:
         print("No suitable stories found.")
         return
-    best = None
-    best_score = 0
-    for s in stories:
-        score = rate_story(s["text"])
-        if score > best_score and score >= 7:
-            best_score = score
-            best = s
-    if not best:
-        print("No story scored high enough.")
-        return
+    best = stories[0]
     print(f"Selected: {best['title']}")
     print("Generating script...")
     script, scenes = generate_script(best["text"])
@@ -135,7 +116,7 @@ async def main():
     print("Creating thumbnail...")
     thumb_path = create_thumbnail(best["title"])
     print("Assembling video...")
-    video_path = assemble_video(script, voice_path, thumb_path)
+    video_path = assemble_video(voice_path, thumb_path)
     print("Uploading to YouTube...")
     title = best["title"] + " | True Scary Story"
     description = f"Original story by Reddit user.\n\nSubscribe for daily nightmares.\n\n{best['text'][:200]}..."
